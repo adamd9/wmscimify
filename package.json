@@ -1,0 +1,16 @@
+{
+  "name": "wmscim",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "crypto-random-string": "^4.0.0",
+    "form-data": "^4.0.0",
+    "qs": "^6.10.1"
+  },
+  "devDependencies": {}
+}
