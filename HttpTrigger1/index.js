@@ -2,10 +2,7 @@ module.exports = async function (context, req) {
     context.log('JavaScript HTTP trigger function processed a request.');
     context.log(req);
 
-    //process.env["functiontoken"] represents your own secret you'll use to secure the function
-    //Beyond deploying this function, you'll need to enable it for Azure AD identiy management so it can access protected resources
-    //You'll need to set up a Key Vault with a functiontoken secret, assign an access policy that includes your Azure function as the service principal and get/list permissions for secrets
-    //See here for some instructions https://daniel-krzyczkowski.github.io/Integrate-Key-Vault-Secrets-With-Azure-Functions/
+    // Validate that the request is valid and authorised againt the secret in the Key Vault.
 
     if (req.headers.authorization === 'Bearer ' + process.env["functiontoken"]) {
         context.log("Bearer token accepted");
@@ -15,15 +12,13 @@ module.exports = async function (context, req) {
         return;
     }
 
+    //Call the WalkMe authorisation API and get a current auth token.
+
     const axios = require("axios")
     var qs = require('qs');
     var data = qs.stringify({
       'grant_type': 'client_credentials' 
     });
-
-    //process.env["wmcredentials"] represents the WalkMe API credentials provided by Walkme (client ID and client secret base 64 encoded as described in https://developer.walkme.com/reference#getting-started-with-your-api-1)
-    //Beyond deploying this function, you'll need to enable it for Azure AD identiy management so it can access protected resources
-    //You'll need to set up a Key Vault with a wmcredentials secret, assign an access policy that includes your Azure function as the service principal and get/list permissions for secrets
 
     const options = {
         headers: { 
@@ -41,7 +36,7 @@ module.exports = async function (context, req) {
     auth_token = token_req.access_token;
 
 
-    //get access roles
+    //get access roles for matching with App Roles during provisioning
         context.log('Getting access roles');
         const options1 = {headers: {'Authorization': 'Bearer ' + auth_token}};
         const access_roles = await axios.get('https://api.walkme.com/public/v1/scim/AccessRoles', options1).then(function(response) {
@@ -60,6 +55,7 @@ module.exports = async function (context, req) {
                 return error.response.data;
         });
 
+        //Convert the returned user access role IDs into the human readable displayname
         for (const i in users_req.Resources) {
             var humanRoleName = access_roles.Resources.filter(item => item.id === users_req.Resources[i].accessRole).map(item => item.name);
             users_req.Resources[i].accessRoleDisplayName = humanRoleName[0];
@@ -73,15 +69,17 @@ module.exports = async function (context, req) {
         context.log('Is get user by ID');
         const options1 = {headers: {'Authorization': 'Bearer ' + auth_token}};
         var users_req = await axios.get('https://api.walkme.com/public/v1/scim/Users/' + req.params.user_id, options1).then(function(response) {
+            //TODO - return a pseudo-active status based on assigned systems
             // if (response.data.allowedSystems.length === 0) {response.data.active = "False"} else {response.data.active = "True"};
             return response.data;
             }).catch(function(error) {
-                if (error.response.data.status === 404) {
-                    error.response.data.detail = 'Resource ' + req.params.user_id + ' not found';
-                }
+                //Thought this was required for proper handling but doesn't look like it  - will remove.
+                // if (error.response.data.status === 404) {
+                //     error.response.data.detail = 'Resource ' + req.params.user_id + ' not found';
+                // }
                 return error.response.data;
             });
-
+        //Convert the returned user access role IDs into the human readable displayname
         var humanRoleName = access_roles.Resources.filter(item => item.id === users_req.accessRole).map(item => item.name);
         users_req.accessRoleDisplayName = humanRoleName[0];
         responseMessage = users_req;
@@ -99,15 +97,17 @@ module.exports = async function (context, req) {
                 return error.response.data;
         });
         
+        //Filter the full user list down to just the user(s) that match the filter query
         var filterUserString = req.query.filter.match(/userName.eq.\"(.*)\"/);
         var filtered = users_req.Resources.filter(a => a.userName.includes(filterUserString[1]));
         users_req.totalResults = filtered.length;
         users_req.Resources = filtered;
         for (const i in users_req.Resources) {
+            //Convert the returned user access role IDs into the human readable displayname
             var humanRoleName = access_roles.Resources.filter(item => item.id === users_req.Resources[i].accessRole).map(item => item.name);
             users_req.Resources[i].accessRoleDisplayName = humanRoleName[0];
         }
-        //TODO - change to a loop incase multiple results
+        //TODO - change to a loop incase multiple results and return a pseudo-active status based on assigned systems
         // if (users_req.Resources.length === 1) {
         //     if (users_req.Resources[0].allowedSystems.length === 0) {
         //         users_req.Resources[0].active = "False"
@@ -164,13 +164,13 @@ module.exports = async function (context, req) {
                 var accessRoleId = access_roles.Resources.filter(item => item.name === req.body.Operations[i].value).map(item => item.id);
                 putreq.accessRole = accessRoleId[0];
             };
-
-            if (req.body.Operations[i].path === 'active' && req.body.Operations[i].value === 'False') {
-                //AAD marks for soft deletion then performs a DELETE request 30 days later. As there is no active marker, removing all systems and marking the name for deletion.
-                putreq.name.givenName = "AAD MARKED FOR DELETION";
-                putreq.name.familyName = "AAD MARKED FOR DELETION";
-                putreq.allowedSystems = [""];
-            };
+            //TODO: accept an active status change and convert it to a pseudo-active status based on assigned systems
+            // if (req.body.Operations[i].path === 'active' && req.body.Operations[i].value === 'False') {
+            //     //AAD marks for soft deletion then performs a DELETE request 30 days later. As there is no active marker, removing all systems and marking the name for deletion.
+            //     putreq.name.givenName = "AAD MARKED FOR DELETION";
+            //     putreq.name.familyName = "AAD MARKED FOR DELETION";
+            //     putreq.allowedSystems = [""];
+            // };
 
           }
 

@@ -32,8 +32,12 @@
 The purpose of this project is to take the existing <a href="https://developer.walkme.com/reference#user-management-api">WalkMe User Management API</a> and make it <a href='https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/use-scim-to-provision-users-and-groups'>a SCIM compliant endpoint</a> to the point where it can be practically used for automated user provisioning in Azure AD.
 
 Functional gaps that prevent the WalkMe User Management API from being used for automated user provisioning:
- - Needs to support a permenant
- - Needs to support a GET filter query on userName
+ - Needs to support a permenant API bearer token, rather than the 24hour token issued by our Get Auth Token API (https://api.walkme.com/accounts/connect/token)
+ - Needs to support a GET filter query on userName, as Azure uses this for validating the endpoint as a valid SCIM endpoint (and when identifying matching WalkMe users for reconciliation)
+ - GET user requests: Return the human readable role display name, for matching with App Roles during provisioning
+ - PUT/PATCH user requests: Expose a PATCH method and convert it to a PUT request to the WalkMe API
+ - PUT/PATCH user requests: Accepting the human readable role display name as part of a PATCH request, and submit the Access Role ID for the corresponding PUT request
+ - POST user requests: Assign a secure, random throwaway password, as while the WalkMe spec says that password is optional, apparently it isn't and the request fails without one.
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
@@ -64,7 +68,7 @@ Perform an initial publish of the code to a new Azure Function, note down the en
 
 In Azure, enable your Function App for Identify management, so that it can be managed as an Azure AD resource.
 
-In Azure, set up a new Key Vault with:
+In Azure, <a href='https://daniel-krzyczkowski.github.io/Integrate-Key-Vault-Secrets-With-Azure-Functions/'>set up a new Key Vault</a> with:
  - A secret called `functiontoken` with any random value (this will be used to secure your new SCIM endpoint)
  - A secret called `wmcredentials` with the WalkMe credentiasl as a the base64 encoding of the consumer key and consumer secrect of the WalkMe account joined by a colon.
  - An access policy that allows the GET and LIST functions for Secrets, with your Azure Function App as the service principal
@@ -99,9 +103,17 @@ Once the app is working, you then need to register a new enterprise application 
 
 Once completed, go to App Registrations > \<your app\> > App Roles and add as many user roles as you have in WalkMe. (including any custom ones). Note that the Display Name MUST match the WalkMe role name EXACTLY, as this how user roles are managed.
 
-Next, go to Enterprise Applications > \<your app\> > Provisioning and set up automated provisioing, where your endpoint is your function app endpoint i.e. https://\<function app name\>.azurewebsites.net/api/scim (without the /users part). Your secret token is the secret from `functiontoken`.
+Next, go to Enterprise Applications > \<your app\> > Provisioning and set up automated provisioning, where your endpoint is your function app endpoint i.e. https://\<function app name\>.azurewebsites.net/api/scim (without the /users part). Your secret token is the secret from `functiontoken`.
 
 You should get a green tick.
+
+Notes:
+ - In terms of syncing and scope, I'd suggest syncing only AD users assigned to the all (as opposed to the ALL option). You can use scope to limit further if you want.
+ - Syncing Groups is not supported
+
+You then need to update the attribute mappings for AD Users to match the following (you'll need to add the last one as a custom attribute):
+
+![Attribute mapping example](./attribute_mapping.png)
 
 Once this is done, you can assign users to your app, and assign them a role and they will be provisioned in WalkMe!
 
@@ -110,4 +122,5 @@ Notes:
  - Supports assigning the user a WalkMe Access Role as defined in App Registrations > App Roles
  - DOES NOT support assigning systems (yet)
  - DOES NOT support a soft-delete (which occurs when a user is removed from the Azure App, but not removed from Azure AD)
+ - DOES NOT support the Groups endpoints
 
