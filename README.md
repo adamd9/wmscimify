@@ -37,8 +37,9 @@ Functional gaps that prevent the WalkMe User Management API from being used for 
  - Needs to support a GET filter query on userName, as Azure uses this for validating the endpoint as a valid SCIM endpoint (and when identifying matching WalkMe users for reconciliation)
  - GET user requests: Return the human readable role display name, for matching with App Roles during provisioning
  - PUT/PATCH user requests: Expose a PATCH method and convert it to a PUT request to the WalkMe API
+ - PUT/PATCH user requests: Extra call to get the user's externalID and submit with the PUT request, as this is required when SSO is enabled (not documented in WalkMe spec)
  - PUT/PATCH user requests: Accepting the human readable role display name as part of a PATCH request, and submit the Access Role ID for the corresponding PUT request
- - POST user requests: Assign a secure, random throwaway password, as while the WalkMe spec says that password is optional, apparently it isn't and the request fails without one.
+ - POST user requests: Assign a secure, random throwaway password, as the request fails without one (not documented in WalkMe spec)
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
