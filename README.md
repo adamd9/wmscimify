@@ -32,6 +32,8 @@
 
 The purpose of this project is to take the existing <a href="https://developer.walkme.com/reference#user-management-api">WalkMe User Management API</a> and make it <a href='https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/use-scim-to-provision-users-and-groups'>a SCIM compliant endpoint</a> to the point where it can be practically used for automated user provisioning in Azure AD.
 
+DISCLAIMER: This is just a POC - it's not perfect, and almost definitely buggy!
+
 Functional gaps that prevent the WalkMe User Management API from being used for automated user provisioning:
  - Needs to support a permenant API bearer token, rather than the 24hour token issued by our Get Auth Token API (https://api.walkme.com/accounts/connect/token)
  - Needs to support a GET filter query on userName, as Azure uses this for validating the endpoint as a valid SCIM endpoint (and when identifying matching WalkMe users for reconciliation)
