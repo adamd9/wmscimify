@@ -41,7 +41,7 @@ Functional gaps that prevent the WalkMe User Management API from being used for 
  - PUT/PATCH user requests: Expose a PATCH method and convert it to a PUT request to the WalkMe API
  - PUT/PATCH user requests: Extra call to get the user's externalID and submit with the PUT request, as this is required when SSO is enabled (not documented in WalkMe spec)
  - PUT/PATCH user requests: Accepting the human readable role display name as part of a PATCH request, and submit the Access Role ID for the corresponding PUT request
- - POST user requests: Assign a secure, random throwaway password, as the request fails without one (not documented in WalkMe spec)
+ - POST user requests: Assign a secure, random throwaway password, as the request fails without one even when account is set up for SSO (not documented in WalkMe spec)
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
