@@ -24,8 +24,9 @@
 
 - [About](#about)
 - [Getting Started](#getting_started)
-- [Deployment](#deployment)
 - [Usage](#usage)
+- [Deployment](#deployment)
+- [TODO](#todo)
 
 ## 🧐 About <a name = "about"></a>
 
@@ -124,3 +125,7 @@ Notes:
  - DOES NOT support a soft-delete (which occurs when a user is removed from the Azure App, but not removed from Azure AD)
  - DOES NOT support the Groups endpoints
 
+## TODO <a name = "todo"></a>
+
+ - Support assigning systems (yet)
+ - Support a soft-delete by implementing a pseudo-active status whereby a use is inactivated by removign all of their assigned systems. 
