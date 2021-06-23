@@ -30,7 +30,7 @@
 
 ## 🧐 About <a name = "about"></a>
 
-The purpose of this project is to take the existing <a href="https://developer.walkme.com/reference#user-management-api">WalkMe User Management API</a> and make it <a href='https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/use-scim-to-provision-users-and-groups'>a SCIM compliant endpoint</a> to the point where it can be practically used for automated user provisioning in Azure AD.
+The purpose of this project is to to identify the functional gaps that need to be addressed in order for WalkMe to support automated admin user provisioning, by take the existing <a href="https://developer.walkme.com/reference#user-management-api">WalkMe User Management API</a> and make it <a href='https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/use-scim-to-provision-users-and-groups'>a SCIM compliant endpoint</a> to the point where it can be practically used for automated user provisioning in Azure AD.
 
 DISCLAIMER: This is just a POC - it's not perfect, and almost definitely buggy!
 
