@@ -35,12 +35,12 @@ The purpose of this project is to take the existing <a href="https://developer.w
 DISCLAIMER: This is just a POC - it's not perfect, and almost definitely buggy!
 
 Functional gaps that prevent the WalkMe User Management API from being used for automated user provisioning:
- - Needs to support a permenant API bearer token, rather than the 24hour token issued by our Get Auth Token API (https://api.walkme.com/accounts/connect/token)
- - Needs to support a GET filter query on userName, as Azure uses this for validating the endpoint as a valid SCIM endpoint (and when identifying matching WalkMe users for reconciliation)
- - GET user requests: Return the human readable role display name, for matching with App Roles during provisioning
- - PUT/PATCH user requests: Expose a PATCH method and convert it to a PUT request to the WalkMe API
+ - Implemented a permanent API bearer token, rather than the 24hour token issued by our Get Auth Token API (https://api.walkme.com/accounts/connect/token)
+ - Added support for a GET filter query on userName, as Azure uses this for validating the endpoint as a valid SCIM endpoint (and when identifying matching WalkMe users for reconciliation)
+ - GET user requests: Extra cell to get AccessRoles and convert the AccessRole ID to the human readable role display name, for matching with App Roles during provisioning
+ - PUT/PATCH user requests: Expose a PATCH method rather than a PUT method with an Operations object
  - PUT/PATCH user requests: Extra call to get the user's externalID and submit with the PUT request, as this is required when SSO is enabled (not documented in WalkMe spec)
- - PUT/PATCH user requests: Accepting the human readable role display name as part of a PATCH request, and submit the Access Role ID for the corresponding PUT request
+ - PUT/PATCH user requests: Extra cell to get AccessRoles to accept the human readable role display name as part of a PATCH request and convert it to an Access Role ID for the corresponding PUT request
  - POST user requests: Assign a secure, random throwaway password, as the request fails without one even when account is set up for SSO (not documented in WalkMe spec)
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
